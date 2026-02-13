@@ -1,0 +1,362 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Student Management System</title>
+    <style>
+        body {
+            font-family: Arial, Helvetica, sans-serif;
+            background: #f7f9fc;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            width: 90%;
+            margin: auto;
+            padding: 30px 0;
+        }
+        h1 {
+            text-align: center;
+            color: #1e66f5;
+            font-size: 36px;
+        }
+        .add-btn {
+            display: block;
+            width: 160px;
+            margin: 20px auto 40px;
+            padding: 12px;
+            background: #1e66f5;
+            color: white;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: #fff;
+            padding: 18px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            position: relative;
+        }
+        .card-actions {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+        }
+        .card-actions a {
+            margin-left: 8px;
+            text-decoration: none;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        .student-card {
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+        }
+        .student-card img {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background: #fff;
+            width: 420px;
+            margin: 100px auto;
+            padding: 25px;
+            border-radius: 10px;
+        }
+        .close {
+            float: right;
+            font-size: 22px;
+            cursor: pointer;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 12px;
+        }
+       .card-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 6px;
+}
+
+.simple-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px;
+}
+
+.card-title {
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.card-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.icon {
+    cursor: pointer;
+    font-size: 18px;
+    opacity: 0.7;
+    transition: 0.2s;
+}
+
+.icon:hover {
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+.icon.edit {
+    color: #f4a261;
+}
+
+.icon.delete {
+    color: #e63946;
+}
+.card-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 10px;
+}
+
+.icon.edit {
+    color: #f4a261;
+}
+.icon.delete {
+    color: #e63946;
+}
+.card-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 0; /* removed space between icons */
+}
+
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1> Student Management System</h1>
+    <button class="add-btn" onclick="openModal()"> Add Student</button>
+
+    
+    <h2>Colleges</h2>
+
+<div class="grid">
+    {% for college in colleges %}
+    <div class="card">
+        <strong>{{ college.college_name }}</strong>
+
+        <div class="card-actions">
+            <a class="btn-custom btn-edit"
+               onclick="openEditCollege('{{ college.id }}','{{ college.college_name|escapejs }}')">✏️</a>
+            <a class="btn-custom btn-delete"
+               onclick="openDeleteCollege('{{ college.id }}','{{ college.college_name|escapejs }}')">🗑️</a>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div id="editCollegeModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeEditCollege()">×</span>
+    <h3>Edit College</h3>
+    <form method="POST" id="editCollegeForm">
+      {% csrf_token %}
+      <input type="text" name="college_name" id="editCollegeName" required>
+      <button type="submit" class="add-btn">Update</button>
+    </form>
+  </div>
+</div>
+
+<div id="deleteCollegeModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeDeleteCollege()">×</span>
+    <h3>Delete College</h3>
+    <p>Are you sure you want to delete <strong id="deleteCollegeName"></strong>?</p>
+    <form method="POST" id="deleteCollegeForm">
+      {% csrf_token %}
+      <button type="submit" class="add-btn" style="background:red"> Delete</button>
+      
+    </form>
+  </div>
+</div>
+
+    
+    <h2> Departments</h2>
+<div class="grid">
+    {% for dept in departments %}
+    <div class="card">
+        <strong>{{ dept.dept_name }}</strong>
+        <div class="card-actions">
+           
+            <a class="btn-custom btn-edit"
+   onclick="openEditDept('{{ dept.id }}','{{ dept.dept_name }}')">✏️</span>
+</a>
+<a class="btn-custom btn-delete"
+   onclick="openDeleteDept('{{ dept.id }}','{{ dept.dept_name }}')">🗑️</span>
+</a>
+
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<div id="editDeptModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeEditDept()">×</span>
+    <h3>Edit Department</h3>
+    <form method="POST" id="editDeptForm">
+      {% csrf_token %}
+      <input type="text" name="dept_name" id="editDeptName" required>
+      <button type="submit" class="add-btn">Update</button>
+    </form>
+  </div>
+</div>
+
+<div id="deleteDeptModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeDeleteDept()">×</span>
+    <h3>Delete Department</h3>
+    <p>
+      Are you sure you want to delete
+      <strong id="deleteDeptName"></strong>?
+    </p>
+    <form method="POST" id="deleteDeptForm">
+      {% csrf_token %}
+      <button type="submit" class="add-btn" style="background:red">
+        Yes, Delete
+      </button>
+    </form>
+  </div>
+</div>
+
+
+    
+    <h2> Students</h2>
+<div class="grid">
+    {% for student in students %}
+    <a href="{% url 'student_profile' student.id %}" class="card student-card">
+        {% if student.profile_picture %}
+            <img src="{{ student.profile_picture.url }}">
+        {% else %}
+            <img src="https://via.placeholder.com/80">
+        {% endif %}
+        <h4>{{ student.student_name }}</h4>
+        <p>Age: {{ student.student_age }}</p>
+        <p>{{ student.dept.dept_name }}</p>
+        <p>Joining Year: {{ student.joining_year }}</p>
+    </a>
+    {% endfor %}
+</div>
+
+
+
+<div id="studentModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal()">×</span>
+        <h3>Add Student</h3>
+        <form method="POST" action="{% url 'add_student' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="text" name="student_name" placeholder="Student Name" required>
+            <input type="number" name="student_age" placeholder="Student Age" required>
+            <input type="number" name="joining_year" placeholder="Joining Year" required min="" max="">
+
+            <select name="college" required>
+                <option value="">Select College</option>
+                {% for college in colleges %}
+                <option value="{{ college.id }}">{{ college.college_name }}</option>
+                {% endfor %}
+            </select>
+
+            <select name="dept" required>
+                <option value="">Select Department</option>
+                {% for dept in departments %}
+                <option value="{{ dept.id }}">{{ dept.dept_name }}</option>
+                {% endfor %}
+            </select>
+
+            <input type="file" name="profile_picture">
+            <button type="submit" class="add-btn">Save</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function openModal(){studentModal.style.display='block'}
+function closeModal(){studentModal.style.display='none'}
+function openEditCollege(id,name){}
+function openDeleteCollege(id){}
+function openEditDept(id,name){}
+function openDeleteDept(id){}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+function openEditCollege(id, name) {
+    if(!id) return alert("College ID not found!");
+    document.getElementById('editCollegeName').value = name;
+    document.getElementById('editCollegeForm').action = `/edit-college/${id}/`;
+    document.getElementById('editCollegeModal').style.display = "block";
+}
+
+function closeEditCollege() {
+    document.getElementById('editCollegeModal').style.display = "none";
+}
+
+function openDeleteCollege(id, name) {
+    if(!id) return alert("College ID not found!");
+    document.getElementById('deleteCollegeName').innerText = name;
+    document.getElementById('deleteCollegeForm').action = `/delete-college/${id}/`;
+    document.getElementById('deleteCollegeModal').style.display = "block";
+}
+
+function closeDeleteCollege() {
+    document.getElementById('deleteCollegeModal').style.display = "none";
+}
+function openEditDept(id, name) {
+    editDeptName.value = name;
+    editDeptForm.action = `/edit-department/${id}/`;
+    editDeptModal.style.display = "block";
+}
+function closeEditDept() {
+    editDeptModal.style.display = "none";
+}
+function openDeleteDept(id, name) {
+    deleteDeptName.innerText = name;
+    deleteDeptForm.action = `/delete-department/${id}/`;
+    deleteDeptModal.style.display = "block";
+}
+function closeDeleteDept() {
+    deleteDeptModal.style.display = "none";
+}
+</script>
+
+</body>
+</html>

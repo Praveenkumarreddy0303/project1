@@ -1,0 +1,177 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{ student.student_name }} Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container py-5">
+
+    <!-- Student Card -->
+    <div class="card mx-auto shadow" style="max-width: 520px;">
+        <div class="card-body text-center">
+
+            {% if student.profile_picture %}
+                <img src="{{ student.profile_picture.url }}"
+                     class="rounded-circle mb-3"
+                     style="width:120px;height:120px;object-fit:cover;">
+            {% else %}
+                <img src="https://via.placeholder.com/120"
+                     class="rounded-circle mb-3">
+            {% endif %}
+
+            <h4>{{ student.student_name }}</h4>
+            <p><strong>Age:</strong> {{ student.student_age }}</p>
+            <p><strong>College:</strong> {{ student.college.college_name }}</p>
+            <p><strong>Department:</strong> {{ student.dept.dept_name }}</p>
+            <p><strong>Joining Year:</strong> {{ student.joining_year }}</p>
+
+            <div class="d-flex flex-wrap justify-content-center gap-2 mt-3">
+                <a href="{% url 'edit_student' student.id %}" class="btn btn-warning">Edit</a>
+
+                <form method="POST" action="{% url 'delete_student' student.id %}"
+                      onsubmit="return confirm('Delete this student?');">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+
+                <a href="{% url 'home' %}" class="btn btn-secondary">Back</a>
+
+                <button class="btn btn-info" data-bs-toggle="collapse" data-bs-target="#subjectsCollapse">
+                    View Subjects
+                </button>
+
+                <a href="{% url 'export_marks_pdf' student.id %}" class="btn btn-primary">
+                    Export Marks (PDF)
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Subjects Section -->
+    <div class="collapse mt-4" id="subjectsCollapse">
+        <div class="container">
+
+            {% for sem in semester_data %}
+            <form method="post" class="mb-4">
+                {% csrf_token %}
+                <input type="hidden" name="semester_id" value="{{ sem.semester.id }}">
+
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="text-primary text-center">{{ sem.semester.sem_name }}</h5>
+
+                        <table class="table table-bordered align-middle mt-3">
+                            <thead class="table-dark text-center">
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Credits</th>
+                                    <th>Enter Marks</th>
+                                    <th>Marks</th>
+                                    <th>Remarks</th>
+                                    <th>Earned Credits</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for m in sem.marks_list %}
+                                <tr>
+                                    <td>{{ m.subject.subject_name }}</td>
+                                    <td class="text-center">{{ m.subject.credits }}</td>
+
+                                    <td class="text-center">
+                                        {% if sem.is_active %}
+                                            <input type="number" name="marks_{{ m.id }}"
+                                                   value="{{ m.marks|default_if_none:'' }}"
+                                                   min="0" max="100"
+                                                   class="form-control text-center">
+                                        {% else %}
+                                            <span class="fw-semibold text-muted">TBA</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td class="text-center">{{ m.marks|default_if_none:"" }}</td>
+
+                                    <td class="text-center">
+                                        {% if m.remarks == "Pass" %}
+                                            <span class="badge bg-success">Pass</span>
+                                        {% elif m.remarks == "Fail" %}
+                                            <span class="badge bg-danger">Fail</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td class="text-center">{{ m.earned_credits|default_if_none:"" }}</td>
+                                </tr>
+                                {% endfor %}
+
+                                <tr class="table-secondary fw-bold text-center">
+                                    <td colspan="2">Semester Total</td>
+                                    <td>{{ sem.total_subjects|default_if_none:"" }}</td>
+                                    <td>{{ sem.total_marks|default_if_none:"" }}</td>
+                                    <td></td>
+                                    <td>{{ sem.total_credits|default_if_none:"" }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        {% if sem.is_active %}
+                        <div class="text-center mt-3">
+                            <strong>Semester GPA:</strong>
+                            {% if sem.semester_gpa %}
+                                <span class="badge bg-primary fs-6 ms-2">{{ sem.semester_gpa }}</span>
+                            {% else %}
+                                <span class="text-muted ms-2">—</span>
+                            {% endif %}
+                        </div>
+
+                        <div class="text-center mt-2">
+                            <button type="submit" class="btn btn-success px-4">
+                                Save {{ sem.semester.sem_name }}
+                            </button>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </form>
+            {% endfor %}
+
+            <!-- Summary -->
+            <div class="card shadow mt-4 mb-5">
+                <div class="card-body text-center">
+                    <h4 class="text-primary mb-4">Summary</h4>
+
+                    <div class="row justify-content-center">
+                        <div class="col-md-4">
+                            <strong>Total Earned Credits</strong>
+                            <p class="fs-5">{{ overall_earned_credits|default:"—" }}</p>
+                        </div>
+
+                        <div class="col-md-4">
+                            <strong>Overall CGPA</strong>
+                            <p class="fs-4 fw-bold text-primary">{{ overall_cgpa|default:"—" }}</p>
+                        </div>
+
+                        <div class="col-md-4 mt-3">
+                            <strong>Final Result:</strong>
+                            {% if final_result == "Pass" %}
+                                <span class="badge bg-success ms-2">PASS</span>
+                            {% elif final_result == "Fail" %}
+                                <span class="badge bg-danger ms-2">FAIL</span>
+                            {% else %}
+                                <span class="text-muted ms-2">TBA</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

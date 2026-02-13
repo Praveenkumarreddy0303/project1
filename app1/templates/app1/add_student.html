@@ -1,0 +1,83 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add Student</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="container my-5">
+    <h2>Add Student</h2>
+
+    <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <div class="mb-3">
+        <label for="student_name" class="form-label">Student Name</label>
+        <input type="text" class="form-control" id="student_name" name="student_name" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="student_age" class="form-label">Age</label>
+        <input type="number" class="form-control" id="student_age" name="student_age" required>
+    </div>
+
+    <div class="mb-3">
+        <label for="college" class="form-label">College</label>
+        <select class="form-control" id="college" name="college" required>
+            {% for c in colleges %}
+                <option value="{{ c.id }}">{{ c.college_name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label for="dept" class="form-label">Department</label>
+        <select class="form-control" id="dept" name="dept" required>
+            {% for d in departments %}
+                <option value="{{ d.id }}">{{ d.dname }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="mb-3">
+    <label for="joining_year" class="form-label">Joining Year</label>
+    <input type="number"
+           class="form-control"
+           id="joining_year"
+           name="joining_year"
+           readonly>
+
+</div>
+   <div class="mb-3">
+    <label for="profile_picture" class="form-label">Profile Picture (JPG only)</label>
+    <input type="file"
+           class="form-control"
+           id="profile_picture"
+           name="profile_picture"
+           accept=".jpg,.jpeg"
+           required>
+</div>
+
+    <button type="submit" class="btn btn-primary">Add Student</button>
+</form>
+
+
+</div>
+<script>
+    document.getElementById("joining_year").value = new Date().getFullYear();
+</script>
+<script>
+document.getElementById("profile_picture").addEventListener("change", function () {
+    const file = this.files[0];
+    if (file && file.type !== "image/jpeg") {
+        alert("Only JPG images are allowed!");
+        this.value = "";
+    }
+});
+</script>
+
+</body>
+</html>
