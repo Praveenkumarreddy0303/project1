@@ -47,6 +47,7 @@ class Student(models.Model):
     def __str__(self):
         return self.student_name
 
+
 class Marks(models.Model):
     student = models.ForeignKey(Student, on_delete=models.CASCADE)
     subject = models.ForeignKey(Subject, on_delete=models.CASCADE)

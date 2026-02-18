@@ -11,7 +11,10 @@ from reportlab.lib import colors
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.units import inch
 from io import BytesIO
+from django.contrib.auth.decorators import user_passes_test
 
+def superuser_required(view_func):
+    return user_passes_test(lambda u: u.is_superuser)(view_func)
 
 
 def home(request):
@@ -46,6 +49,7 @@ def add_student(request):
     })
 
 
+@superuser_required
 def add_college(request):
     if request.method == "POST":
         college_name = request.POST.get('college_name')
@@ -54,6 +58,7 @@ def add_college(request):
         return redirect('home')
     return render(request, 'app1/add_college.html')
 
+@superuser_required
 def add_department(request):
     if request.method == "POST":
         dept_name = request.POST.get('dept_name')
@@ -206,14 +211,15 @@ def student_profile(request, id):
             "is_active": is_active,
             "is_saved": is_saved,
         })
-       
+
+
         final_result = "TBA"
     
     if len(semester_order) == 8 and all_semesters_completed:
      if overall_earned_credits >= 35 :
         final_result = "Pass"
     else:
-        final_result = "FAIL"
+        final_result = "Fail"
 
     overall_cgpa = (
         round(overall_earned_credits / overall_subjects, 2)
@@ -320,3 +326,4 @@ def export_marks_pdf(request, id):
     response.write(pdf)
 
     return response
+
