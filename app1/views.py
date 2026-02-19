@@ -58,7 +58,6 @@ def add_college(request):
         return redirect('home')
     return render(request, 'app1/add_college.html')
 
-@superuser_required
 def add_department(request):
     if request.method == "POST":
         dept_name = request.POST.get('dept_name')
@@ -219,7 +218,7 @@ def student_profile(request, id):
      if overall_earned_credits >= 35 :
         final_result = "Pass"
     else:
-        final_result = "Fail"
+        final_result = "tba"
 
     overall_cgpa = (
         round(overall_earned_credits / overall_subjects, 2)
